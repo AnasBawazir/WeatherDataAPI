@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Events\WeatherBroadcast;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\WeatherService;
@@ -69,9 +70,7 @@ class WeatherController extends Controller
 
     public function initLiveWeatherUpdate()
     {
-        return WebSocket::call('liveWeatherUpdate', function ($cities) {
-            // Handle live weather updates for the provided cities
-        });
+        return event(new WeatherBroadcast(response()->json($this->weatherService->getSpecifiedBulkWeather())));
     }
 
     public function liveRadarView()

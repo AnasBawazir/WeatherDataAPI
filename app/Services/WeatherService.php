@@ -167,4 +167,32 @@ class WeatherService
             ];
         }
     }
+
+    /**
+     * Retrieves the current weather data for multiple specified cities in the desired format.
+     *
+     * @return array An array of cities with their coordinates, names, and temperatures.
+     */
+    public function getSpecifiedBulkWeather()
+    {
+        $cities = config('app.cities');
+        $weatherData = $this->getBulkWeather(array_keys($cities));
+        $specifiedData = [];
+
+        foreach ($weatherData as $city => $cityData) {
+            if (!isset($cityData['error']) && isset($cityData['current'])) {
+                $coordinates = config('app.cities.' . $city);
+                $specifiedData[] = [
+                    'coordinates' => [
+                        'lng' => $coordinates['lng'],
+                        'lat' => $coordinates['lat'],
+                    ],
+                    'name' => $city,
+                    'temp' => $cityData['current']['temperature_2m'],
+                ];
+            }
+        }
+
+        return $specifiedData;
+    }
 }

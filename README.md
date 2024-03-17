@@ -8,6 +8,8 @@ Features
 - Retrieve current weather data for a single city
 - Retrieve current weather data for multiple cities in a single request
 - Retrieve aggregated weather statistics across all cities
+- Real-time weather updates through WebSockets (/weather/live)
+- Live weather radar only data without visualization using pusher (/weather/live-radar)
 - Caching mechanism to store and retrieve weather data from the external API
 - Polling mechanism to periodically update the weather data in the cache
 - Error handling and logging
@@ -15,11 +17,14 @@ Features
 
 ## Installation
 
-- Clone the repository with `git clone https://github.com/your-repo/WeatherDataAPI.git`
+- Clone the repository with `git clone https://github.com/AnasBawazir/WeatherDataAPI`
 - Navigate to the project directory `cd WeatherDataAPI`
 - Copy the `.env.example` file and create a new `.env` file 
 - Run `composer install`
+- Run `npm install`
 - Run `php artisan key:generate` to generate an application key
+- Run `php artisan ui vue`
+- Run `npm run watch` to start the WebSocket service
 - Run `php artisan serve` to start the development server
 - The application should now be accessible at http://localhost:8000
 
@@ -89,8 +94,38 @@ If you need to modify the list of cities or their coordinates, you can update th
 **Error Handling**:
 - If there is an error while fetching weather data from the Open-Meteo API for any city, an error message will be logged, and the statistics will be calculated based on the available data.
 
+4. /weather/live
+
+**Method**: WebSocket
+
+**Description**: This endpoint establishes a real-time communication channel for live weather updates. Clients (weather applications) can connect and receive updates for specified cities.
+
+**Workflow**:
++ Client connects to the /weather/live endpoint using a WebSocket connection with Laravel tools such as pusher and Laravel echo.
++ Client sends an initial message containing the desired city names.
 
 
+**Response**:
+The server sends an array of weather data objects, each containing the following information for a city:
+
++ name (string): The name of the city.
++ coordinates (object): An object containing the latitude and longitude of the city.
+  + lat (float): Latitude of the city.
+  + lon (float): Longitude of the city.
++ temp (float): The current temperature in the city.
+
+
+5. /weather/live-radar
+
+**Method**: GET
+
+**Description**: This endpoint serves a webpage that subscribes to the /weather/live endpoint and suppose to renders the temperatures on a map according to the point coordinates, with live updates but the implementation only to retrieve the data.
+
+**Functionality** (expected):
+
+- Client (web browser) sends a GET request to /weather/live-radar.
+- Server responds with data suitable for rendering temperatures on a map based on city coordinates.
+- Client-side application utilizes JavaScript libraries (like Leaflet or Mapbox) to display a map and dynamically update temperature information according to the received data, creating a live weather radar visualization.
 ## Caching and Polling
 The application implements a caching mechanism to store and retrieve weather data from the external API. Weather data is cached for 15 minutes, reducing the number of API calls made.
 To periodically update the cached weather data, a scheduled task is implemented using [Laravel's task scheduling functionality](https://laravel.com/docs/10.x/scheduling#running-the-scheduler). The `FetchWeatherCommand` is scheduled to run every 15 minutes using the following code in the `App\Console\Kernel` class:
